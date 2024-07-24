@@ -1,0 +1,93 @@
+---
+title: "Analysis of Women Dataset"
+author: "Sharon Shabu"
+date: "07/22/24"
+output: html_notebook
+  
+Is it possible to predict the weight of a woman using linear regression based on her height?
+
+To analyze the relationship between the height and weight by developing a linear regression model.
+
+The data set used for the following model is "women", which contains the height(inches) and weight(lbs) of women aged 30-39 in America.
+
+1. Loading the libraries in order to load the dataset.
+```{r}
+library(datasets)
+library(ggplot2)
+library(caret)
+```
+2. Loading the dataset.
+```{r}
+data("women")
+```
+3. Check for any missing values.
+```{r}
+missing_values <- sum(is.na(women))
+print(missing_values)
+```
+4. Calculating the correlation.
+```{r}
+correlation <- cor(women$height, women$weight)
+print(correlation)
+```
+5. The data from the dataset summarized.
+```{r}
+summary(women)
+```
+6. Calculating median height and weight.
+```{r}
+median_height <- median(women$height)
+print(paste("Median Height:", median_height))
+
+median_weight <- median(women$weight)
+print(paste("Median Weight:", median_weight))
+```
+7. Creating a scatterplot(Bivariate), I am using a scatterplot as its only two variables that we are analyzing.
+```{r}
+ plot(women$height, women$weight,
+      main = "Height VS Weight",
+      xlab = "Height ('')",
+      ylab = "Weight (lbs)",
+      col = "lightpink")
+```
+8. Creating the linear regression model, I am using this approach as it is a suitable way to visualize the relationship between these two variables.
+```{r}
+model <- lm(weight ~ height, data = women)
+summary(model)
+```
+9. The results from the model.
+```{r}
+print("Results:")
+print(coef(model))
+```
+10. Creating the visualization of the linear regression model.
+```{r}
+abline(model, col= "green")
+```
+11. Preparing for cross validation which will help confirm the validity of the predictions.
+```{r}
+train_control <- trainControl(method = "cv",
+                             number= 10)
+```
+12. Linear regression with cross validation.
+```{r}
+model_cv <- train(weight ~ height, 
+                  data = women,
+                  method = "lm",
+                  trControl =
+                  train_control,
+                  metric = "RMSE")  
+```
+13. Picking the succesful model from the cross validation, and printing its coefficients.
+```{r}
+print(model_cv)
+best_model <- model_cv$finalModel
+coefficients <- coef(best_model)
+print(coefficients)
+```
+14. Making a prediction, in this case I will use 61.5 inches for the height.
+```{r}
+new_height <- 61.5
+predicted_weight <- predict(best_model, newdata = data.frame(height = new_height))
+print(paste("The predicted weight", new_height, ":", predicted_weight))
+```
